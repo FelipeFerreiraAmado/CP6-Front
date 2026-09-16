@@ -43,7 +43,10 @@ export function cardValue(rank: Rank): number {
   return Number(rank)
 }
 
-/** Gera um baralho completo e ordenado de 52 cartas (mock de dados). */
+/**
+ * Gera o baralho completo de 52 cartas (a fonte de dados "mockada" do jogo).
+ * A lógica do jogo embaralha este baralho e distribui as cartas a partir dele.
+ */
 export function createDeck(): Card[] {
   return SUITS.flatMap((suit) =>
     RANKS.map((rank) => ({
@@ -54,22 +57,3 @@ export function createDeck(): Card[] {
     })),
   )
 }
-
-/** Soma simples dos valores base de uma mão (usada para exibição). */
-export function sumValues(cards: Card[]): number {
-  return cards.reduce((total, card) => total + card.value, 0)
-}
-
-/**
- * Mãos mockadas apenas para montar o layout visual no step-2 (ainda sem lógica).
- * A partir do step-3 as mãos passam a ser geradas a partir de `createDeck()`.
- */
-export const mockDealerHand: Card[] = [
-  { id: 'K-spades', rank: 'K', suit: 'spades', value: 10 },
-  { id: '9-hearts', rank: '9', suit: 'hearts', value: 9 },
-]
-
-export const mockPlayerHand: Card[] = [
-  { id: '10-clubs', rank: '10', suit: 'clubs', value: 10 },
-  { id: '8-hearts', rank: '8', suit: 'hearts', value: 8 },
-]
