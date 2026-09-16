@@ -24,7 +24,7 @@ function App() {
     : 'Sua vez — compre ou pare'
 
   return (
-    <div className="game">
+    <div className="w-[min(960px,100%)] flex flex-col gap-6">
       <Header title="Blackjack" subtitle="Cassino Clássico" />
 
       <ScoreBoard
@@ -43,7 +43,7 @@ function App() {
         banner={RESULT_MESSAGES[result]}
       />
 
-      <section className="game__controls" aria-label="Ações do jogo">
+      <section className="flex flex-wrap justify-center gap-4" aria-label="Ações do jogo">
         <Button variant="primary" onClick={hit} disabled={isRoundOver}>
           Comprar
         </Button>
@@ -55,7 +55,7 @@ function App() {
         </Button>
       </section>
 
-      <footer className="game__footer">
+      <footer className="text-center text-[0.8rem] tracking-[0.03em] text-muted">
         <p>Felipe Ferreira Amado · RM 572567 — FIAP Front-End Design Engineering</p>
       </footer>
     </div>

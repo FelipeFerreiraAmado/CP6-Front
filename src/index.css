@@ -1,81 +1,86 @@
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@import 'tailwindcss';
 
-:root {
-  /* ---- Paleta: tema Cassino Clássico (Las Vegas) ---- */
-  --felt-green: #0a5c3f;
-  --felt-green-dark: #073d2a;
-  --felt-green-light: #0f7a54;
-  --gold: #d4af37;
-  --gold-light: #f5d061;
-  --gold-deep: #a8862a;
-  --red: #c1121f;
-  --red-dark: #8b0d16;
-  --black-card: #141414;
-  --card-bg: #fbfbf7;
-  --text-light: #f5f5f5;
-  --text-muted: #bcd0c6;
+/* ---- Tokens do tema Cassino Clássico (Tailwind v4, config CSS-first) ---- */
+@theme {
+  --color-felt: #0a5c3f;
+  --color-felt-dark: #073d2a;
+  --color-felt-light: #0f7a54;
+  --color-gold: #d4af37;
+  --color-gold-light: #f5d061;
+  --color-gold-deep: #a8862a;
+  --color-casino-red: #c1121f;
+  --color-casino-red-dark: #8b0d16;
+  --color-card-face: #fbfbf7;
+  --color-ink: #141414;
+  --color-cream: #f5f5f5;
+  --color-muted: #bcd0c6;
 
-  /* ---- Espaçamento ---- */
-  --space-2xs: 0.25rem;
-  --space-xs: 0.5rem;
-  --space-sm: 0.75rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2.5rem;
-
-  /* ---- Raios ---- */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
-  --radius-pill: 999px;
-
-  /* ---- Sombras / realces ---- */
-  --shadow-card: 0 8px 18px rgba(0, 0, 0, 0.4);
-  --shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --ring-gold: 0 0 0 2px var(--gold);
-
-  /* ---- Tipografia ---- */
-  --font-display: 'Cinzel', 'Georgia', serif;
+  --font-display: 'Cinzel', Georgia, serif;
   --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-card: 'Georgia', 'Times New Roman', serif;
+  --font-card: Georgia, 'Times New Roman', serif;
 
-  color-scheme: dark;
-  font-family: var(--font-body);
-  line-height: 1.5;
+  --shadow-card: 0 8px 18px rgb(0 0 0 / 0.4);
+  --shadow-panel: 0 10px 30px rgb(0 0 0 / 0.35);
+
+  --animate-deal: card-deal 0.35s ease both;
 }
 
-body {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  padding: var(--space-lg);
-  background: radial-gradient(circle at 50% 0%, #0c3d2b 0%, #051f16 70%);
-  color: var(--text-light);
+@keyframes card-deal {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) rotate(-3deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.game {
-  width: min(960px, 100%);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
+/* ---- Utilitários compostos (fundos elaborados que dão identidade ao tema) ---- */
+@utility felt-surface {
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    var(--color-felt-light) 0%,
+    var(--color-felt) 55%,
+    var(--color-felt-dark) 100%
+  );
 }
 
-.game__controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-md);
+@utility card-back-pattern {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-casino-red-dark) 0 6px,
+    var(--color-casino-red) 6px 12px
+  );
 }
 
-.game__footer {
-  text-align: center;
-  font-size: 0.8rem;
-  letter-spacing: 0.03em;
-  color: var(--text-muted);
+@utility chip-red {
+  background: radial-gradient(circle at 50% 40%, var(--color-casino-red), var(--color-casino-red-dark));
+}
+
+@utility chip-black {
+  background: radial-gradient(circle at 50% 40%, #1b1b1b, #000);
+}
+
+/* ---- Base ---- */
+@layer base {
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem;
+    font-family: var(--font-body);
+    color: var(--color-cream);
+    background: radial-gradient(circle at 50% 0%, #0c3d2b 0%, #051f16 70%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
