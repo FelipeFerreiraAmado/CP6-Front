@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Card } from '../types/card'
 import {
   calculateScore,
@@ -16,17 +16,27 @@ export interface Stats {
   ties: number
 }
 
+const EMPTY_STATS: Stats = { wins: 0, losses: 0, ties: 0 }
+
+interface BlackjackOptions {
+  /** Pontuação em que o dealer para de comprar (vem das configurações globais). */
+  dealerStandsAt?: number
+}
+
 /**
  * Encapsula todo o estado e as regras do Blackjack usando os hooks
  * useState, useEffect e useCallback. Trabalha sobre dados mockados
  * (baralho gerado em código).
+ *
+ * A partir do step-5 este hook é consumido uma única vez, pelo `GameProvider`,
+ * que publica o resultado para toda a árvore via Context API.
  */
-export function useBlackjack() {
+export function useBlackjack({ dealerStandsAt = DEALER_STANDS_AT }: BlackjackOptions = {}) {
   const [deck, setDeck] = useState<Card[]>([])
   const [playerHand, setPlayerHand] = useState<Card[]>([])
   const [dealerHand, setDealerHand] = useState<Card[]>([])
   const [result, setResult] = useState<GameResult>('playing')
-  const [stats, setStats] = useState<Stats>({ wins: 0, losses: 0, ties: 0 })
+  const [stats, setStats] = useState<Stats>(EMPTY_STATS)
 
   const playerScore = calculateScore(playerHand)
   const dealerScore = calculateScore(dealerHand)
@@ -47,6 +57,9 @@ export function useBlackjack() {
       return prev
     })
   }, [])
+
+  // Zera o placar acumulado da sessão sem interromper a rodada atual.
+  const resetStats = useCallback(() => setStats(EMPTY_STATS), [])
 
   // Reinicia a partida: baralho novo e duas cartas para cada lado.
   const startNewRound = useCallback(() => {
@@ -81,13 +94,13 @@ export function useBlackjack() {
     }
   }, [deck, playerHand, isRoundOver, registerResult])
 
-  // Parar: o dealer compra até atingir 17 e então comparamos as mãos.
+  // Parar: o dealer compra até atingir o limite configurado e então comparamos as mãos.
   const stand = useCallback(() => {
     if (isRoundOver) return
 
     const workingDealer = [...dealerHand]
     const workingDeck = [...deck]
-    while (calculateScore(workingDealer) < DEALER_STANDS_AT && workingDeck.length > 0) {
+    while (calculateScore(workingDealer) < dealerStandsAt && workingDeck.length > 0) {
       workingDealer.push(workingDeck.shift() as Card)
     }
 
@@ -96,7 +109,7 @@ export function useBlackjack() {
     setDeck(workingDeck)
     setResult(outcome)
     registerResult(outcome)
-  }, [dealerHand, deck, playerHand, isRoundOver, registerResult])
+  }, [dealerHand, deck, playerHand, isRoundOver, dealerStandsAt, registerResult])
 
   // Distribui a primeira rodada uma única vez (resiste ao double-invoke do StrictMode).
   const dealtRef = useRef(false)
@@ -113,16 +126,33 @@ export function useBlackjack() {
       : 'Blackjack — sua vez'
   }, [result, isRoundOver])
 
-  return {
-    playerHand,
-    dealerHand,
-    playerScore,
-    dealerScore,
-    result,
-    isRoundOver,
-    stats,
-    hit,
-    stand,
-    restart: startNewRound,
-  }
+  // Objeto estável: evita renderizações desnecessárias em quem consome o Context.
+  return useMemo(
+    () => ({
+      playerHand,
+      dealerHand,
+      playerScore,
+      dealerScore,
+      result,
+      isRoundOver,
+      stats,
+      hit,
+      stand,
+      restart: startNewRound,
+      resetStats,
+    }),
+    [
+      playerHand,
+      dealerHand,
+      playerScore,
+      dealerScore,
+      result,
+      isRoundOver,
+      stats,
+      hit,
+      stand,
+      startNewRound,
+      resetStats,
+    ],
+  )
 }

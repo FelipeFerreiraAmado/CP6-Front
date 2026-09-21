@@ -1,26 +1,71 @@
 @import 'tailwindcss';
 
-/* ---- Tokens do tema Cassino Clássico (Tailwind v4, config CSS-first) ---- */
-@theme {
-  --color-felt: #0a5c3f;
-  --color-felt-dark: #073d2a;
-  --color-felt-light: #0f7a54;
-  --color-gold: #d4af37;
-  --color-gold-light: #f5d061;
-  --color-gold-deep: #a8862a;
-  --color-casino-red: #c1121f;
-  --color-casino-red-dark: #8b0d16;
-  --color-card-face: #fbfbf7;
-  --color-ink: #141414;
-  --color-cream: #f5f5f5;
-  --color-muted: #bcd0c6;
+/* ============================================================================
+   TOKENS SEMÂNTICOS (Tailwind v4 — configuração CSS-first)
 
+   Cada token descreve um PAPEL na interface (fundo, texto, destaque, carta...)
+   e não uma cor literal. Assim a troca de tema acontece em um único lugar:
+   o `ThemeProvider` escreve `data-theme` no <html> e o bloco `[data-theme='light']`
+   mais abaixo inverte os valores — os componentes não mudam uma linha sequer.
+   ========================================================================== */
+@theme {
+  /* Fundo da página */
+  --color-bg-top: #0c3d2b;
+  --color-bg-bottom: #051f16;
+
+  /* Mesa (feltro) */
+  --color-table: #0a5c3f;
+  --color-table-light: #0f7a54;
+  --color-table-dark: #073d2a;
+  --color-table-shade: rgb(0 0 0 / 0.5);
+
+  /* Painéis sobrepostos (cabeçalho, placar, pílulas de pontuação) */
+  --color-panel: rgb(0 0 0 / 0.28);
+  --color-panel-strong: rgb(0 0 0 / 0.45);
+  --color-panel-soft: rgb(255 255 255 / 0.07);
+
+  /* Destaques metálicos */
+  --color-accent: #d4af37;
+  --color-accent-strong: #f5d061;
+  --color-accent-deep: #a8862a;
+
+  /* Texto */
+  --color-fg: #f5f5f5;
+  --color-fg-muted: #bcd0c6;
+  --color-danger: #ff8a8a;
+
+  /* Cartas */
+  --color-card-face: #fbfbf7;
+  --color-card-ink: #141414;
+  --color-suit-red: #c1121f;
+  --color-back-a: #8b0d16;
+  --color-back-b: #c1121f;
+
+  /* Fichas decorativas do cabeçalho */
+  --color-chip-a-from: #c1121f;
+  --color-chip-a-to: #7d0a12;
+  --color-chip-b-from: #262626;
+  --color-chip-b-to: #000000;
+
+  /* Botões */
+  --color-btn-primary-from: #f5d061;
+  --color-btn-primary-to: #a8862a;
+  --color-btn-primary-fg: #2a1e00;
+  --color-btn-neutral-from: #16324a;
+  --color-btn-neutral-to: #0c1f30;
+  --color-btn-neutral-fg: #f5f5f5;
+  --color-btn-danger-from: #c1121f;
+  --color-btn-danger-to: #8b0d16;
+  --color-btn-danger-fg: #fff1f1;
+
+  /* Tipografia */
   --font-display: 'Cinzel', Georgia, serif;
   --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-card: Georgia, 'Times New Roman', serif;
 
-  --shadow-card: 0 8px 18px rgb(0 0 0 / 0.4);
-  --shadow-panel: 0 10px 30px rgb(0 0 0 / 0.35);
+  /* Sombras: apontam para variáveis simples, que também mudam com o tema */
+  --shadow-card: var(--shadow-card-value);
+  --shadow-panel: var(--shadow-panel-value);
 
   --animate-deal: card-deal 0.35s ease both;
 }
@@ -36,30 +81,88 @@
   }
 }
 
+/* ---- Tema noturno (padrão) ---- */
+:root {
+  color-scheme: dark;
+  --shadow-card-value: 0 8px 18px rgb(0 0 0 / 0.4);
+  --shadow-panel-value: 0 10px 30px rgb(0 0 0 / 0.35);
+}
+
+/* ---- Tema diurno: as mesmas funções com as cores invertidas ----
+   Claro vira escuro e escuro vira claro (inclusive o rosto das cartas),
+   com os tons de destaque reescalados para manter o contraste legível. */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg-top: #f7f2e3;
+  --color-bg-bottom: #d7e6db;
+
+  --color-table: #e6f2ea;
+  --color-table-light: #f9fdfa;
+  --color-table-dark: #c6dccd;
+  --color-table-shade: rgb(10 60 35 / 0.12);
+
+  --color-panel: rgb(255 255 255 / 0.55);
+  --color-panel-strong: rgb(255 255 255 / 0.8);
+  --color-panel-soft: rgb(11 32 22 / 0.06);
+
+  --color-accent: #8a6a12;
+  --color-accent-strong: #6b4f0b;
+  --color-accent-deep: #e8cf82;
+
+  --color-fg: #13201a;
+  --color-fg-muted: #46584d;
+  --color-danger: #a3121c;
+
+  --color-card-face: #17221d;
+  --color-card-ink: #f3efe2;
+  --color-suit-red: #ff7b7b;
+  --color-back-a: #e8b9bd;
+  --color-back-b: #c96b74;
+
+  --color-chip-a-from: #ffd9db;
+  --color-chip-a-to: #eb949c;
+  --color-chip-b-from: #ffffff;
+  --color-chip-b-to: #d2d2d2;
+
+  --color-btn-primary-from: #7a5c10;
+  --color-btn-primary-to: #3f2d04;
+  --color-btn-primary-fg: #fdf3d6;
+  --color-btn-neutral-from: #dce9f4;
+  --color-btn-neutral-to: #b4cee4;
+  --color-btn-neutral-fg: #0c1f30;
+  --color-btn-danger-from: #ffe0e2;
+  --color-btn-danger-to: #f0acb2;
+  --color-btn-danger-fg: #6b0912;
+
+  --shadow-card-value: 0 8px 18px rgb(18 40 28 / 0.18);
+  --shadow-panel-value: 0 10px 30px rgb(18 40 28 / 0.14);
+}
+
 /* ---- Utilitários compostos (fundos elaborados que dão identidade ao tema) ---- */
 @utility felt-surface {
   background: radial-gradient(
     ellipse at 50% 42%,
-    var(--color-felt-light) 0%,
-    var(--color-felt) 55%,
-    var(--color-felt-dark) 100%
+    var(--color-table-light) 0%,
+    var(--color-table) 55%,
+    var(--color-table-dark) 100%
   );
 }
 
 @utility card-back-pattern {
   background: repeating-linear-gradient(
     45deg,
-    var(--color-casino-red-dark) 0 6px,
-    var(--color-casino-red) 6px 12px
+    var(--color-back-a) 0 6px,
+    var(--color-back-b) 6px 12px
   );
 }
 
-@utility chip-red {
-  background: radial-gradient(circle at 50% 40%, var(--color-casino-red), var(--color-casino-red-dark));
+@utility chip-a {
+  background: radial-gradient(circle at 50% 40%, var(--color-chip-a-from), var(--color-chip-a-to));
 }
 
-@utility chip-black {
-  background: radial-gradient(circle at 50% 40%, #1b1b1b, #000);
+@utility chip-b {
+  background: radial-gradient(circle at 50% 40%, var(--color-chip-b-from), var(--color-chip-b-to));
 }
 
 /* ---- Base ---- */
@@ -70,8 +173,17 @@
     justify-content: center;
     padding: 1.5rem;
     font-family: var(--font-body);
-    color: var(--color-cream);
-    background: radial-gradient(circle at 50% 0%, #0c3d2b 0%, #051f16 70%);
+    color: var(--color-fg);
+    background: radial-gradient(circle at 50% 0%, var(--color-bg-top) 0%, var(--color-bg-bottom) 70%);
+  }
+
+  /* Suaviza a inversão de cores na troca de tema. */
+  body,
+  body * {
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease;
   }
 }
 
