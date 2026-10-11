@@ -6,7 +6,6 @@ import {
   determineOutcome,
   isBlackjack,
   DEALER_STANDS_AT,
-  RESULT_MESSAGES,
   type GameResult,
 } from '../logic/blackjack'
 
@@ -118,13 +117,6 @@ export function useBlackjack({ dealerStandsAt = DEALER_STANDS_AT }: BlackjackOpt
     dealtRef.current = true
     startNewRound()
   }, [startNewRound])
-
-  // Reflete o estado atual do jogo no título da aba do navegador.
-  useEffect(() => {
-    document.title = isRoundOver
-      ? `Blackjack — ${RESULT_MESSAGES[result]}`
-      : 'Blackjack — sua vez'
-  }, [result, isRoundOver])
 
   // Objeto estável: evita renderizações desnecessárias em quem consome o Context.
   return useMemo(

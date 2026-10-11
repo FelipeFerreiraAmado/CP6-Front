@@ -12,6 +12,7 @@ O projeto é construído de forma incremental, uma etapa por *branch* / *pull re
 | `step-3` | Lógica do jogo com *hooks* (`useState`, `useEffect`, `useCallback`)    |
 | `step-4` | Migração do CSS customizado para **TailwindCSS**                        |
 | `step-5` | Estado global com **Context API** (`ThemeContext` e `GameContext`)      |
+| `step-6` | **React Router**, página de login e formulário controlado              |
 
 ---
 
@@ -101,13 +102,58 @@ sistema operacional (`prefers-color-scheme`).
 
 ---
 
+## 🗺️ Rotas (step-6)
+
+| Rota     | Página                | Acesso                                        |
+| -------- | --------------------- | --------------------------------------------- |
+| `/`      | Início                | Público — apresenta o jogo e as regras        |
+| `/login` | Login                 | Público — redireciona para a mesa se já logado |
+| `/game`  | Mesa de jogo          | **Protegido** — exige uma sessão ativa        |
+| `*`      | 404                   | Qualquer endereço inexistente                 |
+
+A navegação usa o **React Router** (`BrowserRouter`). Todas as páginas ficam dentro de um
+`Layout` com o cabeçalho e o rodapé, então trocar de rota não remonta o cabeçalho.
+
+`/game` passa pelo componente `RequireAuth`: sem sessão, o jogador vai para `/login` e a rota
+pretendida é guardada em `state.from` — depois de entrar, ele é levado **ao destino original**,
+não a uma página fixa.
+
+---
+
+## 🔐 Login e formulário
+
+A autenticação é **simulada** (o projeto não tem back-end): o `AuthProvider` revalida as
+credenciais, espera um instante para imitar a latência de uma API e guarda o jogador no contexto
+e no `localStorage`, para a sessão sobreviver a um recarregamento.
+
+O formulário é **controlado pelo React**:
+
+- cada campo vive no estado (`useState`), sem acesso direto ao DOM;
+- a validação roda na saída do campo (`onBlur`) e novamente no envio;
+- as regras ficam em `logic/validation.ts`, fora do componente, e são reaproveitadas pelo provider;
+- o botão fica bloqueado e vira "Entrando…" enquanto o envio está em andamento;
+- os erros são acessíveis: `aria-invalid` no campo, `aria-describedby` apontando para a mensagem
+  e `role="alert"` no erro geral.
+
+| Campo         | Regra                                        |
+| ------------- | -------------------------------------------- |
+| Nome na mesa  | 3 a 18 caracteres                            |
+| E-mail        | formato `algo@algo.dominio`                  |
+| Senha         | mínimo de 6 caracteres                       |
+
+O nome informado no login passa a ser o nome exibido na mesa (grava em `settings.playerName`).
+
+---
+
 ## 🧠 Arquitetura de estado (step-5)
 
 ```
 main.tsx
-└── <ThemeProvider>          tema visual (dark | light)
-    └── <GameProvider>       estado da partida + configurações globais
-        └── <App>            apenas composição
+└── <BrowserRouter>              rotas (step-6)
+    └── <ThemeProvider>          tema visual (dark | light)
+        └── <AuthProvider>       sessão do jogador (step-6)
+            └── <GameProvider>   estado da partida + configurações globais
+                └── <App>        mapa de rotas
 ```
 
 | Arquivo                        | Papel                                                        |
@@ -118,6 +164,9 @@ main.tsx
 | `contexts/GameProvider.tsx`    | Une o hook `useBlackjack` às configurações globais            |
 | `hooks/useTheme.ts`            | Consumo seguro do `ThemeContext`                              |
 | `hooks/useGame.ts`             | Consumo seguro do `GameContext`                               |
+| `contexts/AuthContext.ts`      | Tipos da sessão e das credenciais de login                    |
+| `contexts/AuthProvider.tsx`    | Login/logout simulados e persistência da sessão               |
+| `hooks/useAuth.ts`             | Consumo seguro do `AuthContext`                               |
 
 Os hooks `useTheme` e `useGame` lançam um erro claro se forem usados fora dos respectivos
 providers, evitando o `undefined` silencioso.
@@ -140,6 +189,7 @@ Disponíveis no painel **Configurações** e persistidas no `localStorage`:
 - [TypeScript](https://www.typescriptlang.org/)
 - CSS com variáveis (`step-1` a `step-3`) → **TailwindCSS** (`step-4`)
 - **Context API** para estado global (`step-5`)
+- [React Router 7](https://reactrouter.com/) para as rotas (`step-6`)
 
 ## ▶️ Como executar
 

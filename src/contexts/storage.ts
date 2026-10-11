@@ -18,3 +18,11 @@ export function writeStorage(key: string, value: string): void {
     // Persistência é um extra: se não for possível salvar, o app segue funcionando.
   }
 }
+
+export function removeStorage(key: string): void {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    // Mesmo caso do `writeStorage`: falhar aqui não quebra a aplicação.
+  }
+}
