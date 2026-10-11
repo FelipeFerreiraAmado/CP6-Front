@@ -1,61 +1,23 @@
 import Header from './components/Header/Header'
 import ScoreBoard from './components/ScoreBoard/ScoreBoard'
+import SettingsPanel from './components/SettingsPanel/SettingsPanel'
 import GameTable from './components/GameTable/GameTable'
-import Button from './components/Button/Button'
-import { useBlackjack } from './hooks/useBlackjack'
-import { RESULT_MESSAGES } from './logic/blackjack'
+import Controls from './components/Controls/Controls'
 
+/**
+ * Com o estado global no Context API, o App volta a ser apenas composição:
+ * cada seção busca no contexto exatamente o que precisa.
+ */
 function App() {
-  const {
-    playerHand,
-    dealerHand,
-    playerScore,
-    dealerScore,
-    result,
-    isRoundOver,
-    stats,
-    hit,
-    stand,
-    restart,
-  } = useBlackjack()
-
-  const status = isRoundOver
-    ? 'Rodada encerrada — clique em Reiniciar'
-    : 'Sua vez — compre ou pare'
-
   return (
     <div className="w-[min(960px,100%)] flex flex-col gap-6">
       <Header title="Blackjack" subtitle="Cassino Clássico" />
+      <ScoreBoard />
+      <SettingsPanel />
+      <GameTable />
+      <Controls />
 
-      <ScoreBoard
-        wins={stats.wins}
-        losses={stats.losses}
-        ties={stats.ties}
-        status={status}
-      />
-
-      <GameTable
-        dealerHand={dealerHand}
-        playerHand={playerHand}
-        dealerScore={dealerScore}
-        playerScore={playerScore}
-        hideHole={!isRoundOver}
-        banner={RESULT_MESSAGES[result]}
-      />
-
-      <section className="flex flex-wrap justify-center gap-4" aria-label="Ações do jogo">
-        <Button variant="primary" onClick={hit} disabled={isRoundOver}>
-          Comprar
-        </Button>
-        <Button variant="secondary" onClick={stand} disabled={isRoundOver}>
-          Parar
-        </Button>
-        <Button variant="danger" onClick={restart}>
-          Reiniciar
-        </Button>
-      </section>
-
-      <footer className="text-center text-[0.8rem] tracking-[0.03em] text-muted">
+      <footer className="text-center text-[0.8rem] tracking-[0.03em] text-fg-muted">
         <p>Felipe Ferreira Amado · RM 572567 — FIAP Front-End Design Engineering</p>
       </footer>
     </div>
