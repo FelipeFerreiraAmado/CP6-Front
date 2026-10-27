@@ -70,7 +70,7 @@ function SettingsPanel() {
           </select>
         </div>
 
-        <label className="flex items-center gap-3 text-[0.85rem] text-fg sm:col-span-2">
+        <label className="flex items-center gap-3 text-[0.85rem] text-fg sm:col-span-3">
           <input
             type="checkbox"
             className="size-4 accent-[var(--color-accent)]"
@@ -78,6 +78,16 @@ function SettingsPanel() {
             onChange={(event) => updateSettings({ trainingMode: event.target.checked })}
           />
           Modo treino (mostra a carta virada do dealer)
+        </label>
+
+        <label className="flex items-center gap-3 text-[0.85rem] text-fg sm:col-span-2">
+          <input
+            type="checkbox"
+            className="size-4 accent-[var(--color-accent)]"
+            checked={settings.useApiImages}
+            onChange={(event) => updateSettings({ useApiImages: event.target.checked })}
+          />
+          Usar as imagens das cartas servidas pela API
         </label>
 
         <div className="flex items-end justify-start sm:justify-end">

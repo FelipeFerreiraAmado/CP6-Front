@@ -2,6 +2,7 @@ import ScoreBoard from '../../components/ScoreBoard/ScoreBoard'
 import SettingsPanel from '../../components/SettingsPanel/SettingsPanel'
 import GameTable from '../../components/GameTable/GameTable'
 import Controls from '../../components/Controls/Controls'
+import ErrorBanner from '../../components/ErrorBanner/ErrorBanner'
 import { useGame } from '../../hooks/useGame'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { RESULT_MESSAGES } from '../../logic/blackjack'
@@ -16,6 +17,7 @@ function GamePage() {
   return (
     <>
       <ScoreBoard />
+      <ErrorBanner />
       <SettingsPanel />
       <GameTable />
       <Controls />

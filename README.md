@@ -13,6 +13,7 @@ O projeto é construído de forma incremental, uma etapa por *branch* / *pull re
 | `step-4` | Migração do CSS customizado para **TailwindCSS**                        |
 | `step-5` | Estado global com **Context API** (`ThemeContext` e `GameContext`)      |
 | `step-6` | **React Router**, página de login e formulário controlado              |
+| `step-7` | Integração real com a **API Deck of Cards** (fim dos dados mockados)   |
 
 ---
 
@@ -23,8 +24,8 @@ os fundamentos de React: **componentização**, **comunicação entre componente
 **estilização responsiva** e **gerenciamento de estado com hooks**.
 
 O jogador enfrenta o *dealer* (a "casa") tentando chegar o mais próximo possível de **21 pontos
-sem estourar**. Toda a base do jogo funciona a partir de **dados mockados** (um baralho gerado em
-código), sem depender de nenhuma API externa.
+sem estourar**. Do `step-2` ao `step-6` o baralho era **mockado** (gerado em código); a partir do
+`step-7` as cartas vêm de verdade da **API [Deck of Cards](https://deckofcardsapi.com/)**.
 
 ---
 
@@ -99,6 +100,47 @@ conferidos contra o **WCAG AA (4.5:1)** para garantir a legibilidade nos dois te
 
 O tema escolhido fica salvo no `localStorage` e, na primeira visita, segue a preferência do
 sistema operacional (`prefers-color-scheme`).
+
+---
+
+## 🃏 Integração com a API (step-7)
+
+As cartas vêm da API pública **[Deck of Cards](https://deckofcardsapi.com/)**. Não existe mais
+baralho gerado em código: o arquivo `data/mockCards.ts` foi removido, e com ele o embaralhamento
+local (Fisher-Yates) — quem embaralha agora é a API.
+
+| Funcionalidade        | Endpoint                          | Função                 |
+| --------------------- | --------------------------------- | ---------------------- |
+| Buscar baralho        | `GET /api/deck/new/`              | `fetchNewDeck()`       |
+| Embaralhar cartas     | `GET /api/deck/{id}/shuffle/`     | `shuffleDeck(id)`      |
+| Comprar cartas        | `GET /api/deck/{id}/draw/?count=` | `drawCards(id, count)` |
+
+Quando acontece cada chamada:
+
+- **ao abrir a mesa:** busca o baralho, embaralha e compra 4 cartas (2 para cada lado);
+- **Reiniciar:** embaralha o mesmo baralho — o que já devolve as 52 cartas a ele — e compra 4;
+- **Comprar:** compra 1 carta;
+- **Parar:** compra 1 carta por vez para o dealer, até o limite da casa.
+
+Todo o acesso HTTP fica em `services/deckOfCards.ts`, a única parte do projeto que conhece o
+formato da API. Ele traduz a resposta para o modelo interno (`ACE`/`SPADES` → `A`/`spades`,
+com o valor numérico da carta) e normaliza as falhas em `DeckApiError`, com mensagem em português.
+
+O que o jogo **continua calculando localmente** são as regras: pontuação com o Ás valendo 11 ou 1,
+detecção de Blackjack e comparação das mãos seguem nas funções puras de `logic/blackjack.ts`.
+
+### Estados de carregamento e erro
+
+Como cada ação depende da rede, a interface mostra o que está acontecendo ("Embaralhando as
+cartas…", "Vez do dealer…") e **bloqueia os botões enquanto a resposta não chega**, evitando compras
+duplicadas por clique repetido. Se a chamada falha, aparece um aviso com o botão **Tentar de novo**.
+A mesa também exibe o `deck_id` em uso e quantas cartas restam, segundo a própria API.
+
+### Imagens das cartas
+
+A API serve a imagem de cada carta, e é isso que a mesa mostra por padrão. Nas **Configurações** dá
+para desligar essa opção e voltar às cartas desenhadas em CSS do `step-4`, que acompanham a inversão
+de cores do tema.
 
 ---
 
@@ -190,6 +232,7 @@ Disponíveis no painel **Configurações** e persistidas no `localStorage`:
 - CSS com variáveis (`step-1` a `step-3`) → **TailwindCSS** (`step-4`)
 - **Context API** para estado global (`step-5`)
 - [React Router 7](https://reactrouter.com/) para as rotas (`step-6`)
+- [Deck of Cards API](https://deckofcardsapi.com/) como fonte das cartas (`step-7`)
 
 ## ▶️ Como executar
 

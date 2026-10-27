@@ -1,5 +1,4 @@
 import type { Card } from '../types/card'
-import { createDeck } from '../data/mockCards'
 
 /** Resultado possível de uma rodada ("playing" = rodada em andamento). */
 export type GameResult =
@@ -36,21 +35,6 @@ export function calculateScore(hand: Card[]): number {
 /** Verdadeiro quando a mão é um Blackjack natural (21 com as duas primeiras cartas). */
 export function isBlackjack(hand: Card[]): boolean {
   return hand.length === 2 && calculateScore(hand) === BLACKJACK
-}
-
-/** Embaralha as cartas (Fisher-Yates) sem alterar o array original. */
-export function shuffle(cards: Card[]): Card[] {
-  const copy = [...cards]
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[copy[i], copy[j]] = [copy[j], copy[i]]
-  }
-  return copy
-}
-
-/** Cria um baralho completo (dados mockados) já embaralhado. */
-export function createShuffledDeck(): Card[] {
-  return shuffle(createDeck())
 }
 
 /** Decide o resultado da rodada comparando as pontuações finais. */
