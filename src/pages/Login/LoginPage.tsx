@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useGame } from '../../hooks/useGame'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { ROUTES } from '../../routes/paths'
+import { IS_GAME_PASSWORD_CONFIGURED } from '../../config/env'
 import {
   NAME_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
@@ -90,9 +91,20 @@ function LoginPage() {
           Entrar na mesa
         </h2>
         <p className="mt-2 text-[0.85rem] text-fg-muted">
-          Identifique-se para abrir a mesa de Blackjack.
+          A mesa é uma área restrita: identifique-se e informe a senha de acesso.
         </p>
       </div>
+
+      {/* Deploy sem a variável configurada: avisa em vez de deixar o jogador tentando à toa. */}
+      {!IS_GAME_PASSWORD_CONFIGURED && (
+        <p
+          role="alert"
+          className="py-2 px-3 rounded-lg border border-danger/60 bg-panel-soft text-[0.8rem] text-danger"
+        >
+          Este ambiente não tem a senha de acesso configurada
+          (<code>VITE_GAME_PASSWORD</code>), então o login está desativado.
+        </p>
+      )}
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
         <TextField
@@ -123,13 +135,13 @@ function LoginPage() {
 
         <TextField
           id="login-password"
-          label="Senha"
+          label="Senha de acesso"
           type="password"
           value={values.password}
           onChange={setField('password')}
           onBlur={validateField('password')}
           error={errors.password}
-          hint={`Mínimo de ${PASSWORD_MIN_LENGTH} caracteres.`}
+          hint={`A senha definida para esta publicação (mínimo de ${PASSWORD_MIN_LENGTH} caracteres).`}
           placeholder="••••••"
           autoComplete="current-password"
           disabled={isSubmitting}
@@ -151,7 +163,8 @@ function LoginPage() {
       </form>
 
       <p className="text-center text-[0.75rem] text-fg-muted">
-        Autenticação simulada: não há servidor, qualquer dado válido abre a mesa.
+        O nome e o e-mail são livres; a senha é a definida em{' '}
+        <code>VITE_GAME_PASSWORD</code>.
       </p>
     </section>
   )

@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Variaveis de ambiente: o .env fica so na maquina/no painel da Vercel.
+# O .env.example e versionado de proposito, como modelo.
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
