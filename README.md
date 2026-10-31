@@ -201,20 +201,28 @@ A Vercel detecta o Vite automaticamente (build `npm run build`, saída `dist`).
 ### Passo a passo
 
 1. **Crie o projeto** em [vercel.com/new](https://vercel.com/new) importando o repositório
-   `CP6-Front`.
-2. **Defina a variável de ambiente** antes do primeiro build, em *Settings → Environment Variables*:
+   `CP6-Front`. A Vercel detecta o Vite sozinha.
+
+2. **Defina a variável de ambiente** antes do build, nas *Environment Variables* do projeto:
 
    | Nome                 | Valor                     | Ambientes                         |
    | -------------------- | ------------------------- | --------------------------------- |
    | `VITE_GAME_PASSWORD` | a senha de acesso à mesa  | Production, Preview e Development |
 
-   > A variável é lida **durante o build**. Se você alterá-la depois, é preciso **refazer o deploy**
-   > para o novo valor valer.
+   > A variável é lida **durante o build**. Alterá-la depois exige **refazer o deploy** para o novo
+   > valor valer.
 
-3. **Confira a branch de produção** em *Settings → Git → Production Branch*. Enquanto a cadeia de
-   PRs não estiver mergeada na `main`, aponte a produção para a branch da última etapa (`step-8`) —
-   senão o site publicado será o "Hello World" do `step-1`.
-4. **Publique** e cole a URL na seção [Acesse online](#-acesse-online) deste README.
+3. **Desligue a Vercel Authentication** em *Deployment Protection*. Projetos novos herdam a proteção
+   padrão da equipe, que exige login na Vercel para abrir qualquer deploy — com ela ligada, o link
+   do README não abre para quem não é da equipe. A mesa continua protegida pela senha do passo 2.
+
+4. **Garanta que a produção aponta para o código final.** Por padrão a produção acompanha a `main`,
+   que nesta cadeia de PRs só tem o `step-1` — publicar assim colocaria o "Hello World" no ar. Duas
+   saídas:
+   - **mergear a cadeia de PRs até a `main`** (o caminho mais simples de manter); ou
+   - promover um deploy da branch da última etapa a produção, pela lista de *Deployments*.
+
+5. **Publique** e cole a URL na seção [Acesse online](#-acesse-online) deste README.
 
 ### Rodando localmente
 
