@@ -1,5 +1,7 @@
 import type { Card as CardType } from '../../types/card'
-import { SUIT_NAME, SUIT_SYMBOL } from '../../data/mockCards'
+import { SUIT_NAME, SUIT_SYMBOL } from '../../data/suits'
+import { CARD_BACK_IMAGE } from '../../services/deckOfCards'
+import { useGame } from '../../hooks/useGame'
 
 interface CardProps {
   /** Carta a ser exibida. */
@@ -15,15 +17,32 @@ const baseCard =
 
 /**
  * Componente puramente apresentacional: continua recebendo a carta por props.
- * O tema é aplicado pelos tokens de cor (`card-face`, `card-ink`, `suit-red`),
- * que se invertem sozinhos quando o ThemeContext troca o tema.
+ *
+ * Tem dois modos, escolhidos pela configuração global `useApiImages`:
+ * a **imagem oficial servida pela API** ou a **carta desenhada em CSS**, que
+ * acompanha a inversão de cores do tema (step-5).
  */
 function Card({ card, faceDown = false }: CardProps) {
+  const { settings } = useGame()
+
+  const label = faceDown ? 'Carta virada para baixo' : `${card.rank} de ${SUIT_NAME[card.suit]}`
+
+  if (settings.useApiImages) {
+    return (
+      <img
+        src={faceDown ? CARD_BACK_IMAGE : card.image}
+        alt={label}
+        draggable={false}
+        className={`${baseCard} bg-card-face border border-accent/40 shadow-card object-cover`}
+      />
+    )
+  }
+
   if (faceDown) {
     return (
       <div
         role="img"
-        aria-label="Carta virada para baixo"
+        aria-label={label}
         className={`${baseCard} card-back-pattern border-[3px] border-card-face shadow-[var(--shadow-card),inset_0_0_0_2px_var(--color-accent)] after:content-[''] after:absolute after:inset-2 after:rounded after:border-2 after:border-accent-strong after:opacity-80`}
       />
     )
@@ -35,7 +54,7 @@ function Card({ card, faceDown = false }: CardProps) {
   return (
     <div
       role="img"
-      aria-label={`${card.rank} de ${SUIT_NAME[card.suit]}`}
+      aria-label={label}
       className={`${baseCard} bg-card-face shadow-card ${isRed ? 'text-suit-red' : 'text-card-ink'}`}
     >
       <span className="absolute top-1.5 left-[7px] flex flex-col items-center leading-none font-bold">

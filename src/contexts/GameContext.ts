@@ -11,6 +11,8 @@ export interface GameSettings {
   dealerStandsAt: number
   /** Modo treino: revela a carta virada do dealer durante a rodada. */
   trainingMode: boolean
+  /** Usa as imagens oficiais das cartas servidas pela API (em vez das cartas desenhadas em CSS). */
+  useApiImages: boolean
 }
 
 /** Valores iniciais das configurações globais. */
@@ -18,6 +20,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   playerName: 'Você',
   dealerStandsAt: 17,
   trainingMode: false,
+  useApiImages: true,
 }
 
 /** Opções aceitas pelo seletor de regra do dealer. */
@@ -35,10 +38,22 @@ export interface GameContextValue {
   /** Mensagem de estado da rodada, derivada do resultado atual. */
   statusMessage: string
 
-  /* ---- Ações da partida ---- */
-  hit: () => void
-  stand: () => void
-  restart: () => void
+  /* ---- Integração com a API Deck of Cards ---- */
+  /** `deck_id` do baralho em uso, ou `null` antes da primeira resposta. */
+  deckId: string | null
+  /** Cartas que ainda restam no baralho, segundo a API. */
+  remaining: number | null
+  /** Rótulo da chamada em andamento, ou `null` quando não há nenhuma. */
+  pending: string | null
+  /** Verdadeiro enquanto existe uma chamada em voo. */
+  isBusy: boolean
+  /** Mensagem da última falha de comunicação, ou `null`. */
+  error: string | null
+
+  /* ---- Ações da partida (dependem da API, por isso assíncronas) ---- */
+  hit: () => Promise<void>
+  stand: () => Promise<void>
+  restart: () => Promise<void>
   resetStats: () => void
 
   /* ---- Configurações globais ---- */
