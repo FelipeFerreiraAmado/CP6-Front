@@ -11,6 +11,8 @@ O projeto é construído de forma incremental, uma etapa por *branch* / *pull re
 | `step-2` | Componentes, mock de cartas, comunicação por *props* e layout com CSS  |
 | `step-3` | Lógica do jogo com *hooks* (`useState`, `useEffect`, `useCallback`)    |
 | `step-4` | Migração do CSS customizado para **TailwindCSS**                        |
+| `step-5` | Estado global com **Context API** (`ThemeContext` e `GameContext`)      |
+| `step-6` | **React Router**, página de login e formulário controlado              |
 
 ---
 
@@ -48,7 +50,9 @@ dos naipes das cartas, sobre um fundo escuro e elegante que valoriza o brilho do
 | 🟨 Texto claro      | `#f5f5f5` | Texto sobre a mesa escura                         |
 
 > As cores ficam centralizadas em **variáveis CSS** (`:root`) a partir do `step-2`, o que facilita
-> a manutenção e, no `step-4`, o mapeamento para o tema do TailwindCSS.
+> a manutenção e, no `step-4`, o mapeamento para o tema do TailwindCSS. No `step-5` essas variáveis
+> viraram **tokens semânticos** (papéis como `accent`, `fg`, `card-face`), o que permite inverter
+> o tema inteiro trocando apenas os valores.
 
 ---
 
@@ -77,12 +81,115 @@ O objetivo é somar pontos **o mais próximo possível de 21, sem ultrapassar**.
 
 ---
 
+## 🌗 Temas: noturno e diurno
+
+O jogo tem dois temas, alternados pelo botão no cabeçalho (ou pelo seletor em *Configurações*):
+
+| Papel na interface | Noturno (padrão) | Diurno (invertido) |
+| ------------------ | ---------------- | ------------------ |
+| Fundo da página    | verde quase preto | creme esverdeado  |
+| Mesa (feltro)      | verde escuro      | verde claro        |
+| Rosto das cartas   | creme com naipes escuros | grafite com naipes claros |
+| Destaques (ouro)   | dourado claro     | bronze escuro      |
+| Texto              | claro             | escuro             |
+
+A troca é feita por um único atributo (`data-theme`) no `<html>`: o CSS reescreve os tokens e
+**nenhum componente precisa saber qual tema está ativo**. Todos os pares texto/fundo foram
+conferidos contra o **WCAG AA (4.5:1)** para garantir a legibilidade nos dois temas.
+
+O tema escolhido fica salvo no `localStorage` e, na primeira visita, segue a preferência do
+sistema operacional (`prefers-color-scheme`).
+
+---
+
+## 🗺️ Rotas (step-6)
+
+| Rota     | Página                | Acesso                                        |
+| -------- | --------------------- | --------------------------------------------- |
+| `/`      | Início                | Público — apresenta o jogo e as regras        |
+| `/login` | Login                 | Público — redireciona para a mesa se já logado |
+| `/game`  | Mesa de jogo          | **Protegido** — exige uma sessão ativa        |
+| `*`      | 404                   | Qualquer endereço inexistente                 |
+
+A navegação usa o **React Router** (`BrowserRouter`). Todas as páginas ficam dentro de um
+`Layout` com o cabeçalho e o rodapé, então trocar de rota não remonta o cabeçalho.
+
+`/game` passa pelo componente `RequireAuth`: sem sessão, o jogador vai para `/login` e a rota
+pretendida é guardada em `state.from` — depois de entrar, ele é levado **ao destino original**,
+não a uma página fixa.
+
+---
+
+## 🔐 Login e formulário
+
+A autenticação é **simulada** (o projeto não tem back-end): o `AuthProvider` revalida as
+credenciais, espera um instante para imitar a latência de uma API e guarda o jogador no contexto
+e no `localStorage`, para a sessão sobreviver a um recarregamento.
+
+O formulário é **controlado pelo React**:
+
+- cada campo vive no estado (`useState`), sem acesso direto ao DOM;
+- a validação roda na saída do campo (`onBlur`) e novamente no envio;
+- as regras ficam em `logic/validation.ts`, fora do componente, e são reaproveitadas pelo provider;
+- o botão fica bloqueado e vira "Entrando…" enquanto o envio está em andamento;
+- os erros são acessíveis: `aria-invalid` no campo, `aria-describedby` apontando para a mensagem
+  e `role="alert"` no erro geral.
+
+| Campo         | Regra                                        |
+| ------------- | -------------------------------------------- |
+| Nome na mesa  | 3 a 18 caracteres                            |
+| E-mail        | formato `algo@algo.dominio`                  |
+| Senha         | mínimo de 6 caracteres                       |
+
+O nome informado no login passa a ser o nome exibido na mesa (grava em `settings.playerName`).
+
+---
+
+## 🧠 Arquitetura de estado (step-5)
+
+```
+main.tsx
+└── <BrowserRouter>              rotas (step-6)
+    └── <ThemeProvider>          tema visual (dark | light)
+        └── <AuthProvider>       sessão do jogador (step-6)
+            └── <GameProvider>   estado da partida + configurações globais
+                └── <App>        mapa de rotas
+```
+
+| Arquivo                        | Papel                                                        |
+| ------------------------------ | ------------------------------------------------------------ |
+| `contexts/ThemeContext.ts`     | Tipos e criação do contexto de tema                           |
+| `contexts/ThemeProvider.tsx`   | Estado do tema, persistência e aplicação do `data-theme`      |
+| `contexts/GameContext.ts`      | Tipos do estado da partida e das configurações globais        |
+| `contexts/GameProvider.tsx`    | Une o hook `useBlackjack` às configurações globais            |
+| `hooks/useTheme.ts`            | Consumo seguro do `ThemeContext`                              |
+| `hooks/useGame.ts`             | Consumo seguro do `GameContext`                               |
+| `contexts/AuthContext.ts`      | Tipos da sessão e das credenciais de login                    |
+| `contexts/AuthProvider.tsx`    | Login/logout simulados e persistência da sessão               |
+| `hooks/useAuth.ts`             | Consumo seguro do `AuthContext`                               |
+
+Os hooks `useTheme` e `useGame` lançam um erro claro se forem usados fora dos respectivos
+providers, evitando o `undefined` silencioso.
+
+### ⚙️ Configurações globais
+
+Disponíveis no painel **Configurações** e persistidas no `localStorage`:
+
+- **Nome do jogador** — exibido na mesa no lugar de "Você";
+- **Dealer para em** — 16, 17 ou 18 pontos; muda a regra usada na jogada *Parar*;
+- **Modo treino** — mantém a carta virada do dealer visível durante a rodada;
+- **Tema visual** — mesmo estado do botão do cabeçalho.
+
+---
+
 ## 🛠️ Tecnologias
 
 - [React 19](https://react.dev/)
 - [Vite](https://vite.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
 - CSS com variáveis (`step-1` a `step-3`) → **TailwindCSS** (`step-4`)
+- **Context API** para estado global (`step-5`)
+- [React Router 7](https://reactrouter.com/) para as rotas (`step-6`)
 
 ## ▶️ Como executar
 
