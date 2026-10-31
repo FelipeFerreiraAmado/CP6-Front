@@ -20,14 +20,18 @@ O projeto é construído de forma incremental, uma etapa por *branch* / *pull re
 
 ## 🔗 Acesse online
 
-> 🚧 **Publicação pendente.** O projeto na Vercel ainda precisa ser criado — o passo a passo está
-> em [Deploy na Vercel](#-deploy-na-vercel). Assim que estiver no ar, substitua a linha abaixo pela
-> URL de produção e apague este aviso.
+### 🌐 **<https://cp-6-front-olive.vercel.app>**
 
-**🌐 `https://<nome-do-projeto>.vercel.app`**
+A página inicial e o login são **públicos**. A mesa (`/game`) é uma **área restrita**: só abre com a
+senha de acesso definida na variável `VITE_GAME_PASSWORD` (ver
+[Proteção da mesa](#-proteção-da-mesa-step-8)).
 
-A mesa (`/game`) é uma **área restrita**: é preciso entrar com a senha de acesso definida na
-variável `VITE_GAME_PASSWORD`. A página inicial e o login são públicos.
+| Rota                  | O que esperar                                                   |
+| --------------------- | --------------------------------------------------------------- |
+| `/`                   | Apresentação do jogo e das regras                               |
+| `/login`              | Formulário de acesso                                            |
+| `/game`               | Sem sessão, redireciona para `/login`                           |
+| qualquer outra        | Página 404                                                      |
 
 ---
 
@@ -223,6 +227,9 @@ A Vercel detecta o Vite automaticamente (build `npm run build`, saída `dist`).
    - promover um deploy da branch da última etapa a produção, pela lista de *Deployments*.
 
 5. **Publique** e cole a URL na seção [Acesse online](#-acesse-online) deste README.
+
+> 📌 **Estado atual:** a produção está publicada a partir da branch `step-8`. Ao mergear a cadeia de
+> PRs na `main`, vale reapontar a produção para a `main` para o site seguir o histórico oficial.
 
 ### Rodando localmente
 
