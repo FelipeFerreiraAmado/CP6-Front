@@ -7,6 +7,7 @@ import {
 } from './AuthContext'
 import { readStorage, removeStorage, writeStorage } from './storage'
 import { validateLoginForm } from '../logic/validation'
+import { GAME_PASSWORD, IS_GAME_PASSWORD_CONFIGURED } from '../config/env'
 
 const STORAGE_KEY = 'cp6:user'
 
@@ -30,9 +31,12 @@ function getInitialUser(): AuthUser | null {
  * Provider da sessão do jogador.
  *
  * Não existe back-end neste projeto: a autenticação é **simulada**. O `login`
- * revalida as credenciais (as mesmas regras do formulário), espera um instante
+ * revalida as credenciais (as mesmas regras do formulário), confere a senha de
+ * acesso contra a variável de ambiente `VITE_GAME_PASSWORD`, espera um instante
  * para imitar a latência de uma API e então guarda o jogador no contexto e no
  * `localStorage`, para a sessão sobreviver a um recarregamento da página.
+ *
+ * Sobre o alcance dessa proteção, ver o comentário em `config/env.ts`.
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(getInitialUser)
@@ -53,8 +57,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Credenciais inválidas. Confira os campos e tente de novo.')
     }
 
+    // Sem senha configurada ninguém entra: um deploy mal configurado não pode
+    // virar uma mesa de acesso livre.
+    if (!IS_GAME_PASSWORD_CONFIGURED) {
+      throw new Error(
+        'A senha de acesso não está configurada neste ambiente. Defina VITE_GAME_PASSWORD para liberar a mesa.',
+      )
+    }
+
     // Latência simulada, para o formulário exercitar o estado de "entrando...".
     await new Promise((resolve) => setTimeout(resolve, 500))
+
+    if (password !== GAME_PASSWORD) {
+      throw new Error('Senha de acesso incorreta.')
+    }
 
     const authenticated: AuthUser = { name: name.trim(), email: email.trim().toLowerCase() }
     setUser(authenticated)

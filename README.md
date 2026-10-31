@@ -14,6 +14,20 @@ O projeto é construído de forma incremental, uma etapa por *branch* / *pull re
 | `step-5` | Estado global com **Context API** (`ThemeContext` e `GameContext`)      |
 | `step-6` | **React Router**, página de login e formulário controlado              |
 | `step-7` | Integração real com a **API Deck of Cards** (fim dos dados mockados)   |
+| `step-8` | Deploy na **Vercel** e proteção da mesa por senha em variável de ambiente |
+
+---
+
+## 🔗 Acesse online
+
+> 🚧 **Publicação pendente.** O projeto na Vercel ainda precisa ser criado — o passo a passo está
+> em [Deploy na Vercel](#-deploy-na-vercel). Assim que estiver no ar, substitua a linha abaixo pela
+> URL de produção e apague este aviso.
+
+**🌐 `https://<nome-do-projeto>.vercel.app`**
+
+A mesa (`/game`) é uma **área restrita**: é preciso entrar com a senha de acesso definida na
+variável `VITE_GAME_PASSWORD`. A página inicial e o login são públicos.
 
 ---
 
@@ -144,13 +158,88 @@ de cores do tema.
 
 ---
 
+## 🔒 Proteção da mesa (step-8)
+
+A rota `/game` tem **duas camadas**:
+
+1. **Rota protegida** (desde o `step-6`): sem sessão ativa, o `RequireAuth` redireciona para
+   `/login` guardando o destino em `state.from`. Vale também para acesso direto pela URL — não
+   existe caminho que renderize a mesa sem sessão.
+2. **Senha de acesso** (`step-8`): o login só autentica quando a senha informada é igual à da
+   variável de ambiente **`VITE_GAME_PASSWORD`**. O nome e o e-mail seguem livres; a senha é o que
+   libera a mesa.
+
+A sessão fica no **`localStorage`** (chave `cp6:user`), então o jogador continua logado depois de
+recarregar a página — e **Sair** apaga a chave e volta a exigir a senha.
+
+Se a variável não estiver definida no ambiente, o login **falha fechado**: ninguém entra e a página
+avisa qual variável está faltando. Um deploy mal configurado não vira uma mesa pública.
+
+### ⚠️ Até onde essa proteção vai
+
+Vale ser honesto sobre o alcance: variáveis `VITE_*` são **embutidas no bundle em tempo de build**,
+ou seja, a senha vai para o JavaScript entregue ao navegador e **pode ser lida por quem inspecionar
+o código** — o mesmo valendo para a sessão no `localStorage`, que o próprio usuário pode editar.
+
+Isso atende ao pedido da etapa (manter a mesa fora do acesso casual e do olhar de quem só abre o
+link), mas **não é segurança de verdade**. Para isso, a senha teria de ser verificada em um
+servidor, que devolveria um token assinado — algo fora do escopo de um projeto só de front-end.
+
+---
+
+## 🚀 Deploy na Vercel
+
+O projeto é um SPA com `BrowserRouter`, então o `vercel.json` redireciona todas as rotas para o
+`index.html` — sem isso, abrir `/game` direto daria 404 no servidor:
+
+```json
+{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
+```
+
+A Vercel detecta o Vite automaticamente (build `npm run build`, saída `dist`).
+
+### Passo a passo
+
+1. **Crie o projeto** em [vercel.com/new](https://vercel.com/new) importando o repositório
+   `CP6-Front`.
+2. **Defina a variável de ambiente** antes do primeiro build, em *Settings → Environment Variables*:
+
+   | Nome                 | Valor                     | Ambientes                         |
+   | -------------------- | ------------------------- | --------------------------------- |
+   | `VITE_GAME_PASSWORD` | a senha de acesso à mesa  | Production, Preview e Development |
+
+   > A variável é lida **durante o build**. Se você alterá-la depois, é preciso **refazer o deploy**
+   > para o novo valor valer.
+
+3. **Confira a branch de produção** em *Settings → Git → Production Branch*. Enquanto a cadeia de
+   PRs não estiver mergeada na `main`, aponte a produção para a branch da última etapa (`step-8`) —
+   senão o site publicado será o "Hello World" do `step-1`.
+4. **Publique** e cole a URL na seção [Acesse online](#-acesse-online) deste README.
+
+### Rodando localmente
+
+```bash
+cp .env.example .env     # e defina a sua senha no .env
+npm install
+npm run dev
+```
+
+O `.env` **não é versionado** (está no `.gitignore`); o `.env.example` serve de modelo.
+Para gerar uma senha aleatória:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(18).toString('base64url'))"
+```
+
+---
+
 ## 🗺️ Rotas (step-6)
 
 | Rota     | Página                | Acesso                                        |
 | -------- | --------------------- | --------------------------------------------- |
 | `/`      | Início                | Público — apresenta o jogo e as regras        |
 | `/login` | Login                 | Público — redireciona para a mesa se já logado |
-| `/game`  | Mesa de jogo          | **Protegido** — exige uma sessão ativa        |
+| `/game`  | Mesa de jogo          | **Protegido** — exige sessão + senha de acesso |
 | `*`      | 404                   | Qualquer endereço inexistente                 |
 
 A navegação usa o **React Router** (`BrowserRouter`). Todas as páginas ficam dentro de um
@@ -165,8 +254,9 @@ não a uma página fixa.
 ## 🔐 Login e formulário
 
 A autenticação é **simulada** (o projeto não tem back-end): o `AuthProvider` revalida as
-credenciais, espera um instante para imitar a latência de uma API e guarda o jogador no contexto
-e no `localStorage`, para a sessão sobreviver a um recarregamento.
+credenciais, confere a senha contra `VITE_GAME_PASSWORD`, espera um instante para imitar a latência
+de uma API e guarda o jogador no contexto e no `localStorage`, para a sessão sobreviver a um
+recarregamento. Ver [Proteção da mesa](#-proteção-da-mesa-step-8).
 
 O formulário é **controlado pelo React**:
 
@@ -177,11 +267,11 @@ O formulário é **controlado pelo React**:
 - os erros são acessíveis: `aria-invalid` no campo, `aria-describedby` apontando para a mensagem
   e `role="alert"` no erro geral.
 
-| Campo         | Regra                                        |
-| ------------- | -------------------------------------------- |
-| Nome na mesa  | 3 a 18 caracteres                            |
-| E-mail        | formato `algo@algo.dominio`                  |
-| Senha         | mínimo de 6 caracteres                       |
+| Campo           | Regra                                                     |
+| --------------- | --------------------------------------------------------- |
+| Nome na mesa    | 3 a 18 caracteres                                         |
+| E-mail          | formato `algo@algo.dominio`                               |
+| Senha de acesso | mínimo de 6 caracteres **e** igual a `VITE_GAME_PASSWORD` |
 
 O nome informado no login passa a ser o nome exibido na mesa (grava em `settings.playerName`).
 
@@ -233,6 +323,7 @@ Disponíveis no painel **Configurações** e persistidas no `localStorage`:
 - **Context API** para estado global (`step-5`)
 - [React Router 7](https://reactrouter.com/) para as rotas (`step-6`)
 - [Deck of Cards API](https://deckofcardsapi.com/) como fonte das cartas (`step-7`)
+- [Vercel](https://vercel.com/) para a publicação (`step-8`)
 
 ## ▶️ Como executar
 
