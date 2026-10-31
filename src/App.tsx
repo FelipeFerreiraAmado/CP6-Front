@@ -1,26 +1,32 @@
-import Header from './components/Header/Header'
-import ScoreBoard from './components/ScoreBoard/ScoreBoard'
-import SettingsPanel from './components/SettingsPanel/SettingsPanel'
-import GameTable from './components/GameTable/GameTable'
-import Controls from './components/Controls/Controls'
+import { Route, Routes } from 'react-router-dom'
+import Layout from './components/Layout/Layout'
+import RequireAuth from './components/RequireAuth/RequireAuth'
+import HomePage from './pages/Home/HomePage'
+import LoginPage from './pages/Login/LoginPage'
+import GamePage from './pages/Game/GamePage'
+import NotFoundPage from './pages/NotFound/NotFoundPage'
+import { ROUTES } from './routes/paths'
 
 /**
- * Com o estado global no Context API, o App volta a ser apenas composição:
- * cada seção busca no contexto exatamente o que precisa.
+ * Mapa de rotas da aplicação.
+ *
+ * Todas as páginas ficam dentro do `Layout` (cabeçalho + rodapé), e `/game`
+ * passa antes pelo `RequireAuth`, que exige uma sessão ativa.
  */
 function App() {
   return (
-    <div className="w-[min(960px,100%)] flex flex-col gap-6">
-      <Header title="Blackjack" subtitle="Cassino Clássico" />
-      <ScoreBoard />
-      <SettingsPanel />
-      <GameTable />
-      <Controls />
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path={ROUTES.home} element={<HomePage />} />
+        <Route path={ROUTES.login} element={<LoginPage />} />
 
-      <footer className="text-center text-[0.8rem] tracking-[0.03em] text-fg-muted">
-        <p>Felipe Ferreira Amado · RM 572567 — FIAP Front-End Design Engineering</p>
-      </footer>
-    </div>
+        <Route element={<RequireAuth />}>
+          <Route path={ROUTES.game} element={<GamePage />} />
+        </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   )
 }
 
