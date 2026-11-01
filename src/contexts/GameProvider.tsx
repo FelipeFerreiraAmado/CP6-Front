@@ -44,9 +44,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const game = useBlackjack({ dealerStandsAt: settings.dealerStandsAt })
 
-  const statusMessage = game.isRoundOver
-    ? 'Rodada encerrada — clique em Reiniciar'
-    : 'Sua vez — compre ou pare'
+  // A mensagem de estado dá prioridade ao que está acontecendo com a API.
+  const statusMessage =
+    game.pending ??
+    (game.error
+      ? 'Falha na comunicação com a API'
+      : game.isRoundOver
+        ? 'Rodada encerrada — clique em Reiniciar'
+        : 'Sua vez — compre ou pare')
 
   const value = useMemo<GameContextValue>(
     () => ({ ...game, statusMessage, settings, updateSettings }),

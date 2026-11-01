@@ -16,10 +16,20 @@ export type Rank =
   | 'K'
 
 export interface Card {
-  /** Identificador único da carta, ex.: "A-spades" */
+  /**
+   * Identificador único desta carta dentro da partida.
+   *
+   * O código da API (`KH`, `2D`…) se repete quando o baralho é embaralhado e
+   * comprado de novo, então juntamos um contador de compras para a chave do
+   * React continuar única ao longo da sessão.
+   */
   id: string
+  /** Código da carta na API, ex.: "KH" para o Rei de copas. */
+  code: string
   rank: Rank
   suit: Suit
   /** Valor base da carta (Ás = 11; ajustado para 1 pela lógica quando necessário) */
   value: number
+  /** Imagem oficial da carta, servida pela própria API. */
+  image: string
 }
