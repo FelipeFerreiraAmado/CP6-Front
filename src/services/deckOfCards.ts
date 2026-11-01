@@ -118,7 +118,11 @@ function toCard(apiCard: ApiCard): Card {
     rank,
     suit,
     value: baseValue(rank),
-    image: apiCard.images.svg,
+    // Usamos o PNG, e não o SVG: os SVGs da API são documentos do Inkscape em
+    // tamanho A4 (744x1052pt) e **sem `viewBox`**, com a carta desenhada num
+    // canto da página — reduzidos ao tamanho da mesa, a carta vira um desenho
+    // minúsculo cercado de branco. Os PNGs já vêm recortados (226x314).
+    image: apiCard.images.png,
   }
 }
 

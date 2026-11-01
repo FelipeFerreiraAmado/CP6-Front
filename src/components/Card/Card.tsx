@@ -33,7 +33,7 @@ function Card({ card, faceDown = false }: CardProps) {
         src={faceDown ? CARD_BACK_IMAGE : card.image}
         alt={label}
         draggable={false}
-        className={`${baseCard} bg-card-face border border-accent/40 shadow-card object-cover`}
+        className={`${baseCard} bg-card-paper border border-accent/40 shadow-card object-cover`}
       />
     )
   }

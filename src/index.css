@@ -36,6 +36,10 @@
 
   /* Cartas */
   --color-card-face: #fbfbf7;
+  /* Fundo atrás das imagens servidas pela API. Elas são PNGs com cantos
+     transparentes de cartas sempre brancas, então este token é de propósito o
+     único que NÃO se inverte no tema claro — senão apareceria um halo escuro. */
+  --color-card-paper: #fbfbf7;
   --color-card-ink: #141414;
   --color-suit-red: #c1121f;
   --color-back-a: #8b0d16;
